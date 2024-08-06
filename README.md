@@ -25,7 +25,7 @@ With the typewriter on and in external mode, I measured pin voltages. Here's wha
 
 I took apart the typewriter and photographed the PCB from both sides. 
 
-![PCB top](pcb_full_top.jpg)
+![PCB top](pcb_top_full.jpg)
 ![PCB top](pcb_top_left.jpg)
 ![PCB top](pcb_top_mid.jpg)
 ![PCB top](pcb_top_right.jpg)
@@ -84,13 +84,20 @@ Of course this is a different typewriter, but the pin assignments are consistent
 We also get a simple timing diagram and description of the interface:
 
 > Process:
+>
 > (1) The RP-K100 changes the ON LINE signal from H to L indicating that data transmission has started. This ON LINE signal remains Low during the transmission of 1 byte.
+>
 > (2) Th e RP-K100 first sends the LSB (D0) of a transmitted byte to the TXD line and changes the STB signal from H to L. This STB signal is sent to P51 of the CPU which is the interruption.
+>
 > (3) In the interruption state, the CPU receives a TXD signal and changes the ACK signal from L to H. This ACK signal is sent to the RP-K100.
+>
 > (4) After the RP-K100 has received the ACK signal (L level), the STB signal changes from L to H.
+>
 > (5) When the STB signal (High) is sent from the RP-K100, the thermalwriter sends the ACK signal (High)
 to the RP-K100.
+>
 > (6) When the ACK signal is High, the RP-K100 starts to send the next bit of data.
+>
 > (7) Once the RP-K100 sends 1 byte of data (8 bits) to the CPU, the ON LINE signal changes from L to H.
 
 ![Interface timing diagram](./interface_timing.png)
