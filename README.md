@@ -54,7 +54,7 @@ Thinking we might be using the microcontroller's built-in serial protocol, I ran
 - Pin 2 is connected to uC pin 26 (P_61)
 - Pin 4 is connected to uC pin 25 (P_60)
 
-I didn't bother to trace the actual PCB, so if something didn't buzz out directly it's not listed here. None of these pins corresponds with the HD6303XP microcontroller's built-in serial peripheral; they're just GPIO pins. It looks like none of the mare interrupt triggering pins either. So I hypothesize that whatever the protocol is, it's probably not very timing sensitive.
+I didn't bother to trace the actual PCB, so if something didn't buzz out directly it's not listed here. None of these pins corresponds with the HD6303XP microcontroller's built-in serial peripheral; they're just GPIO pins. It looks like none of them are interrupt triggering pins either. So I hypothesize that whatever the protocol is, it's probably not very timing sensitive.
 
 ### Caution: pitfalls of disassembly
 If you have one of these typewriters, I don't recommend taking it apart. They're very cleanly designed and serviceable inside, but flat-flex keyboard ribbon cables are made with adhesive that has started to degrade. This is most problematic for the yellow rigid plastic tabs attached to the back of the business end of the connectors. Without these tabs, it becomes impossible to cleanly push the ribbon cable into the friction fit connector without the thin plastic bending up on the corner and making a bad contact.
@@ -102,14 +102,14 @@ to the RP-K100.
 
 ![Interface timing diagram](./interface_timing.png)
 
-The only mystery here is the actual signal timing. The "timing diagram" provides no actual guidelines for signal timing, so we'll have to guess. [This hobbyist](https://retrocomputing.stackexchange.com/questions/13385/panasonic-kx-w50th-data-transfer/13510) who used the actual RP-K105 adapter had to set their print server to "super slow" - whatever that means. I judge that's probably a few hundred bytes per second at most, but could be much lower. Above that their typewriter would print but drop characters.  This protocol hopefully isn't very timing-sensitive because the sender waits for an ACK for each bit sent. 
+The only mystery here is the actual signal timing. The "timing diagram" provides no actual guidelines for signal timing, so we'll have to guess. [This hobbyist](https://retrocomputing.stackexchange.com/questions/13385/panasonic-kx-w50th-data-transfer/13510) who used the actual RP-K105 adapter had to set their print server to "super slow" - whatever that means. I judge that's probably a few hundred bits per second at most, but could be much lower. Above that their typewriter would print but drop characters.  This protocol hopefully isn't very timing-sensitive because the sender waits for an ACK for each bit sent. 
 
 Unfortunately I don't have the manual for my typewriter, so I'm only assuming that the interface box is the same based on the pin voltages making sense. I know that Panasonic sold the RP-K100 and RP-K105 interface boxes for several different typewriter models, which seems sensible from a business perspective.
 
 ## Prototyping an interface
 The next step was to prototype an interface board based on the hypothesis that the pinout and interface is as described in the KX-W50TH service manual. For the physical connection, I used a standard DE-9 female solder cup connector and bent the right hand side's metal plate so it would fit.
 
-I chose to use an [RP2040-Zero](https://www.waveshare.com/wiki/RP2040-Zero) board I had lying around, but pretty much any microcontroller with 4 GPIO pins will work. If you try this with a 5v part, you don't even need anything additional. Since the RP2040 is a 3.3v and this bus is pulled to 5v by the typewriter when idle, I used a [74LS240](https://www.futurlec.com/74LS/74LS240.shtml) to drive the ONLINE, STB, and TXD lines.  ACK is simply pulled up to 3.34 with a resistor.  Here's a photo of my lo-fi breadboard layout:
+I chose to use an [RP2040-Zero](https://www.waveshare.com/wiki/RP2040-Zero) board I had lying around, but pretty much any microcontroller with 4 GPIO pins will work. If you try this with a 5v part, you don't even need anything additional. Since the RP2040 is a 3.3v and this bus is pulled to 5v by the typewriter when idle, I used a [74LS240](https://www.futurlec.com/74LS/74LS240.shtml) to drive the ONLINE, STB, and TXD lines.  ACK is simply pulled up to 3.3V with a resistor.  Here's a photo of my lo-fi breadboard layout:
 ![Drawing of the breadboard layout on graph paper](layout.jpg)
 
 Here's a shot of the assembled breadboard:
@@ -184,8 +184,6 @@ void sendBit(bool bit) {
   do {
     delay(WAIT_INTERVAL);
   } while (!digitalRead(ACK_PIN));
-
-  digitalWrite(STROBE_PIN, false);
 }
 ```
 
